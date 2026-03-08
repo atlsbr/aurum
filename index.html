@@ -152,23 +152,19 @@ body {
 /* ============================================
    LAYOUT PRINCIPAL
 ============================================ */
-/* app-wrapper NÃO deve criar contexto de empilhamento próprio
-   para não prender o overlay e o sidebar dentro dele */
-.app-wrapper { display:flex; min-height:100vh; }
+.app-wrapper { position:relative; z-index:1; display:flex; min-height:100vh; }
 
 /* ============================================
    SIDEBAR
 ============================================ */
 .sidebar {
   width:260px; min-height:100vh;
-  /* fundo totalmente sólido — sem translucidez, sem blur */
-  background:#0D0D16;
+  background:rgba(13,13,20,0.95);
   border-right:1px solid var(--black-border);
   display:flex; flex-direction:column;
   position:fixed; left:0; top:0; bottom:0;
-  z-index:300;
-  transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
-  will-change:transform;
+  backdrop-filter:blur(20px); z-index:100;
+  transition:var(--transition);
 }
 .sidebar-logo { padding:28px 24px 20px; border-bottom:1px solid var(--black-border); }
 .logo-mark { display:flex; align-items:center; gap:12px; }
@@ -207,8 +203,7 @@ body {
 .sidebar-footer { padding:16px; border-top:1px solid var(--black-border); }
 .user-info {
   display:flex; align-items:center; gap:10px; padding:10px 12px;
-  border-radius:var(--radius-sm);
-  background:var(--black-hover);
+  border-radius:var(--radius-sm); background:var(--black-hover);
   border:1px solid var(--black-border); position:relative;
 }
 .user-avatar-wrap { position:relative; flex-shrink:0; }
@@ -223,32 +218,13 @@ body {
 .user-name { font-size:13px; font-weight:600; color:var(--text-primary); }
 .user-role { font-size:11px; color:var(--text-muted); }
 .btn-logout {
-  margin-left:auto; padding:5px 11px;
-  background:rgba(231,76,60,0.10); border:1px solid rgba(231,76,60,0.28);
-  border-radius:6px; color:#ff6b6b; font-size:11px;
-  cursor:pointer; transition:var(--transition); font-family:inherit; font-weight:700;
-  white-space:nowrap; flex-shrink:0; letter-spacing:0.2px;
+  margin-left:auto; padding:5px 10px;
+  background:rgba(231,76,60,0.08); border:1px solid rgba(231,76,60,0.2);
+  border-radius:6px; color:var(--danger); font-size:11px;
+  cursor:pointer; transition:var(--transition); font-family:inherit; font-weight:600;
+  white-space:nowrap; flex-shrink:0;
 }
-.btn-logout:hover { background:rgba(231,76,60,0.22); border-color:rgba(231,76,60,0.5); transform:translateY(-1px); }
-
-/* Botão logout largo (base do card do usuário no sidebar) */
-.btn-logout-full {
-  width:100%; padding:11px 14px;
-  background:rgba(231,76,60,0.08);
-  border:1px solid rgba(231,76,60,0.25);
-  border-top:1px solid rgba(231,76,60,0.12);
-  border-radius:0 0 var(--radius-sm) var(--radius-sm);
-  color:#ff6b6b; font-size:13px; font-weight:700;
-  cursor:pointer; transition:var(--transition); font-family:inherit;
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  letter-spacing:0.3px;
-}
-.btn-logout-full:hover {
-  background:rgba(231,76,60,0.20);
-  border-color:rgba(231,76,60,0.55);
-  color:#ff3333;
-}
-.btn-logout-full:active { transform:scale(0.98); }
+.btn-logout:hover { background:rgba(231,76,60,0.2); }
 
 /* Login no sidebar para deslogado */
 .sidebar-login-prompt {
@@ -273,15 +249,11 @@ body {
    TOPBAR
 ============================================ */
 .topbar {
-  height:64px;
-  background:#0D0D16;
+  height:64px; background:rgba(13,13,20,0.8);
   border-bottom:1px solid var(--black-border);
   display:flex; align-items:center; justify-content:space-between;
-  padding:0 32px;
-  position:sticky; top:0;
-  /* z-index menor que overlay (200) e sidebar (300) */
-  z-index:40;
-  /* SEM backdrop-filter aqui — causa blur no conteúdo abaixo do sidebar */
+  padding:0 32px; backdrop-filter:blur(20px);
+  position:sticky; top:0; z-index:50;
 }
 .topbar-left { display:flex; flex-direction:column; }
 .topbar-title { font-size:18px; font-weight:700; color:var(--text-primary); line-height:1.2; }
@@ -290,7 +262,7 @@ body {
 
 /* Botão de login no topbar (visível só no mobile/deslogado) */
 .btn-topbar-login {
-  display:none;
+  display:none; /* só aparece conforme lógica JS */
   align-items:center; gap:8px; padding:8px 14px;
   background:linear-gradient(135deg,var(--gold-primary),var(--gold-dark));
   color:var(--black-deep); border:none; border-radius:var(--radius-sm);
@@ -298,45 +270,6 @@ body {
   transition:var(--transition); font-family:inherit;
 }
 .btn-topbar-login:hover { transform:translateY(-1px); box-shadow:0 4px 15px var(--gold-glow); }
-
-/* Área do usuário na topbar — foto + nome + logout */
-.topbar-user {
-  display:none;
-  align-items:center; gap:10px;
-}
-.topbar-user.show { display:flex; }
-.topbar-user-avatar {
-  width:34px; height:34px;
-  background:linear-gradient(135deg,var(--gold-primary),var(--violet-primary));
-  border-radius:50%; overflow:hidden;
-  display:flex; align-items:center; justify-content:center;
-  font-size:13px; font-weight:700; color:var(--black-deep);
-  border:2px solid rgba(212,175,55,0.3); flex-shrink:0;
-}
-.topbar-user-avatar img { width:34px; height:34px; border-radius:50%; object-fit:cover; display:block; }
-.topbar-user-name {
-  font-size:13px; font-weight:600; color:var(--text-primary);
-  max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.topbar-user-name small { display:block; font-size:10px; color:var(--text-muted); font-weight:400; }
-.btn-topbar-logout {
-  display:flex; align-items:center; gap:7px;
-  padding:8px 16px;
-  background:rgba(231,76,60,0.12);
-  border:1px solid rgba(231,76,60,0.35);
-  border-radius:var(--radius-sm);
-  color:#ff6b6b; font-size:13px; font-weight:700;
-  cursor:pointer; transition:var(--transition); font-family:inherit;
-  white-space:nowrap; letter-spacing:0.3px;
-}
-.btn-topbar-logout:hover {
-  background:rgba(231,76,60,0.25);
-  border-color:rgba(231,76,60,0.7);
-  color:#ff3333;
-  transform:translateY(-1px);
-  box-shadow:0 4px 16px rgba(231,76,60,0.25);
-}
-.btn-topbar-logout:active { transform:translateY(0); box-shadow:none; }
 
 .btn-primary {
   display:flex; align-items:center; gap:8px; padding:9px 18px;
@@ -458,8 +391,6 @@ canvas { width:100% !important; border-radius:var(--radius-sm); }
   border-radius:var(--radius-sm); color:var(--text-primary);
   font-size:14px; font-family:inherit; transition:var(--transition);
   outline:none; -webkit-appearance:none; appearance:none;
-  /* iOS: mínimo 16px para não dar zoom ao focar */
-  min-height:44px;
 }
 .form-input:focus,.form-select:focus { border-color:var(--gold-primary); box-shadow:0 0 0 3px var(--gold-glow); background:var(--black-card); }
 .form-input::placeholder { color:var(--text-muted); }
@@ -483,7 +414,7 @@ canvas { width:100% !important; border-radius:var(--radius-sm); }
 /* ============================================
    LISTA DE TRANSAÇÕES
 ============================================ */
-.transactions-list { display:flex; flex-direction:column; gap:8px; max-height:420px; overflow-y:auto; padding-right:4px; }
+.transactions-list { display:flex; flex-direction:column; gap:8px; max-height:400px; overflow-y:auto; padding-right:4px; }
 .transactions-list::-webkit-scrollbar { width:4px; }
 .transactions-list::-webkit-scrollbar-track { background:var(--black-surface); border-radius:2px; }
 .transactions-list::-webkit-scrollbar-thumb { background:var(--gold-dark); border-radius:2px; }
@@ -585,13 +516,7 @@ canvas { width:100% !important; border-radius:var(--radius-sm); }
 /* ============================================
    MOBILE BOTTOM NAV
 ============================================ */
-.mobile-nav {
-  display:none; position:fixed; bottom:0; left:0; right:0;
-  background:#0D0D16;
-  border-top:1px solid var(--black-border);
-  z-index:100;
-  padding:8px 0 max(8px,env(safe-area-inset-bottom));
-}
+.mobile-nav { display:none; position:fixed; bottom:0; left:0; right:0; background:rgba(13,13,20,0.95); border-top:1px solid var(--black-border); backdrop-filter:blur(20px); z-index:100; padding:8px 0 max(8px,env(safe-area-inset-bottom)); }
 .mobile-nav-inner { display:flex; justify-content:space-around; }
 .mobile-nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 16px; cursor:pointer; transition:var(--transition); border:none; background:none; color:var(--text-muted); font-size:10px; font-family:inherit; font-weight:500; border-radius:var(--radius-sm); }
 .mobile-nav-item.active { color:var(--gold-primary); }
@@ -602,14 +527,7 @@ canvas { width:100% !important; border-radius:var(--radius-sm); }
 ============================================ */
 .hamburger { display:none; width:36px; height:36px; background:var(--black-surface); border:1px solid var(--black-border); border-radius:var(--radius-sm); cursor:pointer; align-items:center; justify-content:center; font-size:18px; color:var(--text-primary); transition:var(--transition); flex-shrink:0; }
 .hamburger:hover { border-color:var(--gold-primary); color:var(--gold-primary); }
-.sidebar-overlay {
-  display:none;
-  position:fixed; inset:0;
-  /* overlay escuro simples — SEM backdrop-filter/blur */
-  background:rgba(0,0,0,0.60);
-  z-index:200; /* acima do conteúdo (40), abaixo da sidebar (300) */
-  cursor:pointer;
-}
+.sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:99; backdrop-filter:blur(4px); }
 
 /* ============================================
    SCORE
@@ -638,214 +556,42 @@ canvas { width:100% !important; border-radius:var(--radius-sm); }
 .delay-3{animation-delay:0.3s;opacity:0;} .delay-4{animation-delay:0.4s;opacity:0;}
 
 /* ============================================
-   RESPONSIVE — TABLET 1024px
+   RESPONSIVE — 1200px
 ============================================ */
-@media(max-width:1024px){
-  .metrics-grid { grid-template-columns:repeat(2,1fr); gap:16px; }
+@media(max-width:1200px){
+  .metrics-grid { grid-template-columns:repeat(2,1fr); }
   .content-grid { grid-template-columns:1fr; }
-  .report-grid  { grid-template-columns:repeat(2,1fr); gap:16px; }
+  .report-grid  { grid-template-columns:repeat(2,1fr); }
 }
 
 /* ============================================
-   RESPONSIVE — MOBILE 768px
-   Sistema completo harmonizado
+   RESPONSIVE — 768px (MOBILE)
 ============================================ */
 @media(max-width:768px){
-
-  /* ── Sidebar: desliza sem blur ── */
-  .sidebar {
-    transform:translateX(-260px);
-    background:#0D0D16 !important;
-  }
-  .sidebar.open {
-    transform:translateX(0);
-    box-shadow:8px 0 32px rgba(0,0,0,0.8);
-  }
-  .sidebar-overlay.show {
-    display:block;
-    animation:overlayFadeIn 0.22s ease forwards;
-  }
-  @keyframes overlayFadeIn {
-    from { opacity:0; }
-    to   { opacity:1; }
-  }
-
-  /* ── Layout base ── */
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); box-shadow:0 0 60px rgba(0,0,0,0.8); }
+  .sidebar-overlay.show { display:block; }
+  .hamburger { display:flex; }
   .main-content { margin-left:0; }
-  .hamburger    { display:flex; }
+  .topbar { padding:0 16px; }
+  .page { padding:16px; padding-bottom:90px; }
+  .metrics-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
+  .metric-value { font-size:20px; }
+  .metric-card  { padding:16px; }
+  .content-grid { grid-template-columns:1fr; }
+  .form-grid    { grid-template-columns:1fr; }
   .mobile-nav   { display:block; }
-
-  /* ── Topbar harmonizado ── */
-  .topbar {
-    height:56px;
-    padding:0 14px;
-  }
-  .topbar-title { font-size:15px; }
-  .topbar-date  { display:none; }   /* esconde data — sem espaço */
-  .topbar-right { gap:8px; }
-
-  /* Botões de ação da topbar: some o texto, fica só ícone */
-  #btnRegistrarTopbar { padding:8px 12px; font-size:12px; gap:5px; }
-  #btnNovaTopbar      { display:none !important; }
-
-  /* Área de usuário na topbar: avatar + botão sair compacto */
-  .topbar-user          { gap:6px; }
-  .topbar-user-name     { display:none; }
-  .topbar-user-avatar   { width:30px; height:30px; font-size:11px; border-width:1px; }
-  .topbar-user-avatar img { width:30px; height:30px; }
-  .btn-topbar-logout    { padding:6px 10px; font-size:11px; gap:5px; }
-  .btn-topbar-logout .logout-label { display:none; }
-
-  /* ── Páginas ── */
-  .page {
-    padding:14px 14px 96px;  /* bottom = mobile-nav + margem */
-  }
-
-  /* ── Section headers ── */
-  .section-title    { font-size:18px; }
-  .section-subtitle { font-size:12px; }
-  .section-header   { margin-bottom:14px; }
-
-  /* ── Guest banner: empilha verticalmente ── */
-  .guest-banner {
-    flex-direction:column;
-    align-items:flex-start;
-    gap:10px;
-    padding:12px 14px;
-    font-size:12px;
-  }
-  .btn-banner-login { margin-left:0; width:100%; text-align:center; padding:10px; }
-
-  /* ── Alert banner ── */
-  .alert-banner { padding:12px 14px; font-size:13px; gap:8px; margin-bottom:14px; }
-
-  /* ── Métricas: 2 colunas equilibradas ── */
-  .metrics-grid {
-    grid-template-columns:repeat(2,1fr);
-    gap:10px;
-    margin-bottom:16px;
-  }
-  .metric-card    { padding:14px 12px; border-radius:var(--radius-md); }
-  .metric-label   { font-size:10px; margin-bottom:8px; }
-  .metric-value   { font-size:18px; letter-spacing:-0.5px; margin-bottom:4px; }
-  .metric-trend   { font-size:10px; }
-  .metric-icon    { font-size:18px; top:12px; right:12px; }
-
-  /* ── Cards ── */
-  .card-header  { padding:14px 16px; }
-  .card-body    { padding:14px 16px; }
-  .card-title   { font-size:13px; }
-
-  /* ── Content grid: coluna única ── */
-  .content-grid { grid-template-columns:1fr; gap:12px; margin-bottom:12px; }
-
-  /* ── Gráfico ── */
-  .chart-container { height:180px; }
-  .chart-legend    { gap:12px; margin-top:10px; padding-top:10px; font-size:11px; }
-
-  /* ── Transações: compactar sem perder info ── */
-  .transactions-list { gap:6px; max-height:none; padding-right:0; }
-  .transaction-item  { padding:10px 12px; gap:10px; border-radius:var(--radius-sm); }
-  .transaction-icon  { width:34px; height:34px; font-size:16px; border-radius:8px; }
-  .transaction-desc  { font-size:13px; }
-  .transaction-meta  { font-size:11px; gap:5px; }
-  .transaction-value { font-size:13px; }
-  .btn-delete        { width:26px; height:26px; font-size:11px; }
-
-  /* ── Filtros: scroll horizontal suave ── */
-  .filter-bar {
-    overflow-x:auto;
-    flex-wrap:nowrap;
-    padding-bottom:6px;
-    gap:6px;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
-  }
-  .filter-bar::-webkit-scrollbar { display:none; }
-  .filter-chip { padding:6px 12px; font-size:11px; white-space:nowrap; }
-
-  /* ── Formulário nova transação ── */
-  .form-grid       { grid-template-columns:1fr; gap:12px; }
-  .form-input,
-  .form-select     { padding:12px 13px; font-size:15px; /* 16px mínimo previne zoom iOS */ }
-  .type-btn        { padding:12px 8px; font-size:13px; }
-  .btn-add         { padding:14px; font-size:15px; }
-
-  /* ── Metas ── */
-  .goal-form        { padding:14px; margin-bottom:14px; }
-  .goal-form-grid   { grid-template-columns:1fr; gap:10px; }
-  .btn-goal-add     { width:100%; padding:12px; }
-  .goal-card        { padding:14px; }
-  .goal-name        { font-size:13px; }
-  .goal-values      { font-size:12px; }
-  .goal-footer      { flex-wrap:wrap; gap:8px; }
-
-  /* ── Relatórios ── */
-  .report-grid  { grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:14px; }
-  .report-card  { padding:14px 12px; }
-  .report-card-icon  { font-size:22px; margin-bottom:6px; }
-  .report-card-label { font-size:10px; }
-  .report-card-value { font-size:16px; }
-
-  /* ── Score ring: menor em mobile ── */
-  .score-ring   { width:100px; height:100px; margin-bottom:12px; }
-  .score-number { font-size:22px; }
-
-  /* ── Categorias ── */
-  .category-label { width:80px; font-size:11px; }
-  .category-value { width:64px; font-size:11px; }
-
-  /* ── Empty state ── */
-  .empty-state  { padding:32px 16px; }
-  .empty-icon   { font-size:36px; }
-  .empty-text   { font-size:13px; }
-
-  /* ── Mobile nav ── */
-  .mobile-nav-item { padding:6px 10px; font-size:9px; }
-  .mobile-nav-icon { font-size:18px; }
-
-  /* ── Login screen ── */
-  .login-card     { padding:28px 20px; border-radius:var(--radius-lg); }
-  .login-logo     { width:52px; height:52px; font-size:24px; margin-bottom:14px; }
-  .login-title    { font-size:22px; }
-  .login-subtitle { font-size:13px; margin-bottom:24px; }
-  .btn-google     { padding:13px 16px; font-size:14px; }
-  .btn-guest      { padding:11px 16px; font-size:13px; }
-  .login-features { grid-template-columns:1fr 1fr; gap:8px; margin-top:20px; }
-  .login-feature  { padding:10px 8px; font-size:10px; }
-  .login-feature-icon { font-size:16px; }
-
-  /* ── Divider ── */
-  .divider { margin:14px 0; }
-
-  /* ── Toast ── */
-  .toast-container { top:12px; right:12px; left:12px; }
-  .toast           { max-width:100%; font-size:12px; padding:12px 14px; }
+  .report-grid  { grid-template-columns:1fr; }
+  .goal-form-grid { grid-template-columns:1fr; }
+  .filter-bar   { overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px; }
+  .btn-primary span.hide-mobile { display:none; }
+  .login-card   { padding:32px 24px; }
+  .login-features { grid-template-columns:1fr 1fr; }
 }
 
-/* ============================================
-   RESPONSIVE — MOBILE PEQUENO 480px
-============================================ */
-@media(max-width:480px){
-  .metrics-grid { gap:8px; }
-  .metric-card  { padding:12px 10px; }
-  .metric-value { font-size:16px; }
-  .metric-label { font-size:9px; }
-  .report-grid  { grid-template-columns:1fr 1fr; gap:8px; }
-  .topbar       { height:52px; }
-  .topbar-title { font-size:14px; }
-}
-
-/* ============================================
-   RESPONSIVE — MOBILE MÍNIMO 360px
-============================================ */
-@media(max-width:360px){
-  .metrics-grid  { grid-template-columns:1fr; gap:8px; }
-  .report-grid   { grid-template-columns:1fr; }
-  .page          { padding:10px 10px 96px; }
-  .metric-value  { font-size:20px; letter-spacing:-0.5px; }
-  .login-card    { padding:24px 16px; }
-  .login-features{ grid-template-columns:1fr 1fr; }
+@media(max-width:400px){
+  .metrics-grid { grid-template-columns:1fr; }
+  .login-features { grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -971,23 +717,6 @@ canvas { width:100% !important; border-radius:var(--radius-sm); }
         <button class="btn-primary" onclick="navigate('add')" style="display:none;" id="btnRegistrarTopbar">
           💰 Registrar
         </button>
-        <!-- Área do usuário logado na topbar -->
-        <div class="topbar-user" id="topbarUserArea">
-          <div class="topbar-user-avatar" id="topbarAvatar">U</div>
-          <div class="topbar-user-name" id="topbarUserName">
-            Usuário
-            <small>Conta Google</small>
-          </div>
-          <button class="btn-topbar-logout" onclick="logout()" title="Sair da conta">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            <span class="logout-label">Sair</span>
-          </button>
-        </div>
-        <!-- Botão login para visitante -->
         <button class="btn-topbar-login" id="btnTopbarLogin" style="display:none;" onclick="loginWithGoogle()">
           🔑 Entrar
         </button>
@@ -1473,29 +1202,18 @@ function loginWithGoogle() {
 }
 
 function logout() {
-  /* Mini-modal de confirmação nativo — leve e sem deps */
-  const ok = confirm('Tem certeza que deseja sair da sua conta?');
-  if (!ok) return;
-
-  if (window._fbLogout) window._fbLogout();
-
-  state.currentUser  = null;
-  state.isGuest      = false;
-  state.transactions = [];
-  state.goals        = [];
-  state.currentPage  = 'dashboard';
-
-  document.getElementById('guestBanner').classList.remove('show');
-  showAppButtons(false);
-  updateUserUI(null);
-
-  /* Pequeno delay para o Firebase terminar o signOut antes de mostrar login */
-  setTimeout(() => {
+  if (window._fbLogout) {
+    window._fbLogout();
+    state.currentUser = null;
+    state.isGuest     = false;
+    state.transactions = [];
+    state.goals        = [];
+    /* Exibe tela de login novamente */
     document.getElementById('loginScreen').classList.remove('hidden');
-    document.getElementById('loginLoading').classList.remove('show');
-  }, 150);
-
-  showToast('Sessão encerrada. Até logo! 👋', 'info');
+    showAppButtons(false);
+    updateUserUI(null);
+    showToast('Sessão encerrada. Até logo! 👋','info');
+  }
 }
 
 function enterAsGuest() {
@@ -1515,71 +1233,50 @@ function enterAsGuest() {
    UI: atualiza sidebar / topbar conforme usuário
 ════════════════════════════════════════════ */
 function updateUserUI(user) {
-  const area        = document.getElementById('sidebarUserArea');
+  const area = document.getElementById('sidebarUserArea');
   const topbarLogin = document.getElementById('btnTopbarLogin');
-  const topbarUser  = document.getElementById('topbarUserArea');
-  const topbarAv    = document.getElementById('topbarAvatar');
-  const topbarName  = document.getElementById('topbarUserName');
 
   if (user) {
-    /* ══ LOGADO COM GOOGLE ══ */
-    const initial   = (user.displayName || 'U').charAt(0).toUpperCase();
-    const firstName = (user.displayName || 'Usuário').split(' ')[0];
-    const fullName  = escHtml(user.displayName || 'Usuário');
-    const photoSrc  = user.photoURL || '';
+    /* Logado com Google */
+    const photoHTML = user.photoURL
+      ? `<img src="${user.photoURL}" alt="foto" onerror="this.style.display='none'">`
+      : user.displayName.charAt(0).toUpperCase();
 
-    /* ── Sidebar footer ── */
-    area.innerHTML =
-      '<div style="display:flex;flex-direction:column;gap:0;">' +
-        '<div class="user-info" style="border-radius:var(--radius-sm) var(--radius-sm) 0 0;border-bottom:none;">' +
-          '<div class="user-avatar-wrap">' +
-            '<div class="user-avatar" id="_sbAvatar">' +
-              (photoSrc ? '<img src="' + photoSrc + '" alt="foto" onerror="this.outerHTML='' + initial + ''">' : initial) +
-            '</div>' +
-          '</div>' +
-          '<div style="flex:1;min-width:0;">' +
-            '<div class="user-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;" title="' + fullName + '">' + fullName + '</div>' +
-            '<div class="user-role" style="color:#2ECC71;font-size:10px;">● Logado com Google</div>' +
-          '</div>' +
-        '</div>' +
-        '<button class="btn-logout-full" onclick="logout()">' +
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
-          ' Sair da conta' +
-        '</button>' +
-      '</div>';
-
-    /* ── Topbar ── */
-    topbarUser.classList.add('show');
-    topbarAv.innerHTML = photoSrc
-      ? '<img src="' + photoSrc + '" alt="foto" onerror="this.outerHTML='' + initial + ''">'
-      : initial;
-    topbarName.innerHTML = escHtml(firstName) + '<small>Conta Google ✓</small>';
+    area.innerHTML = `
+      <div class="user-info">
+        <div class="user-avatar-wrap">
+          <div class="user-avatar" id="userAvatarEl">${photoHTML}</div>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div class="user-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+            title="${escHtml(user.displayName || 'Usuário')}">${escHtml(user.displayName || 'Usuário')}</div>
+          <div class="user-role">Conta Google ✓</div>
+        </div>
+        <button class="btn-logout" onclick="logout()" title="Sair">Sair</button>
+      </div>`;
     topbarLogin.style.display = 'none';
-
   } else if (state.isGuest) {
-    /* ══ MODO VISITANTE ══ */
-    area.innerHTML =
-      '<div class="sidebar-login-prompt">' +
-        '<div style="font-size:11px;color:var(--text-muted);text-align:center;padding:4px 0 8px;">' +
-          '🔒 Modo visitante — dados locais apenas' +
-        '</div>' +
-        '<button class="btn-sidebar-login" onclick="loginWithGoogle()">🔑 Entrar com Google</button>' +
-      '</div>';
-    topbarUser.classList.remove('show');
+    /* Modo visitante */
+    area.innerHTML = `
+      <div class="sidebar-login-prompt">
+        <div style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:4px;">
+          Modo visitante — dados locais
+        </div>
+        <button class="btn-sidebar-login" onclick="loginWithGoogle()">
+          🔑 Fazer Login Google
+        </button>
+      </div>`;
     topbarLogin.style.display = 'flex';
-
   } else {
-    /* ══ SEM SESSÃO ══ */
     area.innerHTML = '';
-    topbarUser.classList.remove('show');
     topbarLogin.style.display = 'none';
   }
 }
 
 function showAppButtons(show) {
-  document.getElementById('btnNovaTopbar').style.display      = show ? '' : 'none';
+  const s = show ? '' : 'none';
+  document.getElementById('btnNovaTopbar').style.display     = show ? '' : 'none';
   document.getElementById('btnRegistrarTopbar').style.display = show ? '' : 'none';
-  if (!show) document.getElementById('topbarUserArea').classList.remove('show');
 }
 
 /* ════════════════════════════════════════════
@@ -2230,4 +1927,4 @@ service cloud.firestore {
 ════════════════════════════════════════════════════════════════
 -->
 </body>
-        </html>
+   </html>

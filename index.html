@@ -458,6 +458,8 @@ canvas { width:100% !important; border-radius:var(--radius-sm); }
   border-radius:var(--radius-sm); color:var(--text-primary);
   font-size:14px; font-family:inherit; transition:var(--transition);
   outline:none; -webkit-appearance:none; appearance:none;
+  /* iOS: mínimo 16px para não dar zoom ao focar */
+  min-height:44px;
 }
 .form-input:focus,.form-select:focus { border-color:var(--gold-primary); box-shadow:0 0 0 3px var(--gold-glow); background:var(--black-card); }
 .form-input::placeholder { color:var(--text-muted); }
@@ -481,7 +483,7 @@ canvas { width:100% !important; border-radius:var(--radius-sm); }
 /* ============================================
    LISTA DE TRANSAÇÕES
 ============================================ */
-.transactions-list { display:flex; flex-direction:column; gap:8px; max-height:400px; overflow-y:auto; padding-right:4px; }
+.transactions-list { display:flex; flex-direction:column; gap:8px; max-height:420px; overflow-y:auto; padding-right:4px; }
 .transactions-list::-webkit-scrollbar { width:4px; }
 .transactions-list::-webkit-scrollbar-track { background:var(--black-surface); border-radius:2px; }
 .transactions-list::-webkit-scrollbar-thumb { background:var(--gold-dark); border-radius:2px; }
@@ -636,64 +638,214 @@ canvas { width:100% !important; border-radius:var(--radius-sm); }
 .delay-3{animation-delay:0.3s;opacity:0;} .delay-4{animation-delay:0.4s;opacity:0;}
 
 /* ============================================
-   RESPONSIVE — 1200px
+   RESPONSIVE — TABLET 1024px
 ============================================ */
-@media(max-width:1200px){
-  .metrics-grid { grid-template-columns:repeat(2,1fr); }
+@media(max-width:1024px){
+  .metrics-grid { grid-template-columns:repeat(2,1fr); gap:16px; }
   .content-grid { grid-template-columns:1fr; }
-  .report-grid  { grid-template-columns:repeat(2,1fr); }
+  .report-grid  { grid-template-columns:repeat(2,1fr); gap:16px; }
 }
 
 /* ============================================
-   RESPONSIVE — 768px (MOBILE)
+   RESPONSIVE — MOBILE 768px
+   Sistema completo harmonizado
 ============================================ */
 @media(max-width:768px){
-  /* Sidebar desliza de fora (sem blur, sem fosco) */
+
+  /* ── Sidebar: desliza sem blur ── */
   .sidebar {
     transform:translateX(-260px);
-    /* garante fundo opaco total — nunca transparente */
     background:#0D0D16 !important;
   }
   .sidebar.open {
     transform:translateX(0);
-    box-shadow:6px 0 40px rgba(0,0,0,0.75);
+    box-shadow:8px 0 32px rgba(0,0,0,0.8);
   }
-  /* Overlay visível ao abrir sidebar */
   .sidebar-overlay.show {
     display:block;
-    animation:overlayIn 0.25s ease;
+    animation:overlayFadeIn 0.22s ease forwards;
   }
-  @keyframes overlayIn {
+  @keyframes overlayFadeIn {
     from { opacity:0; }
     to   { opacity:1; }
   }
 
-  .hamburger     { display:flex; }
-  .main-content  { margin-left:0; }
-  .topbar        { padding:0 16px; }
-  .page          { padding:16px; padding-bottom:90px; }
-  .metrics-grid  { grid-template-columns:repeat(2,1fr); gap:12px; }
-  .metric-value  { font-size:20px; }
-  .metric-card   { padding:16px; }
-  .content-grid  { grid-template-columns:1fr; }
-  .form-grid     { grid-template-columns:1fr; }
-  .mobile-nav    { display:block; }
-  .report-grid   { grid-template-columns:1fr; }
-  .goal-form-grid{ grid-template-columns:1fr; }
-  .filter-bar    { overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px; }
-  .login-card    { padding:32px 24px; }
-  .login-features{ grid-template-columns:1fr 1fr; }
-  /* No mobile: esconde nome, mostra só avatar + botão Sair */
-  .topbar-user-name { display:none; }
-  .topbar-user      { gap:8px; }
-  #btnNovaTopbar    { display:none !important; }
-  /* Logout no topbar mobile: ícone sem texto */
+  /* ── Layout base ── */
+  .main-content { margin-left:0; }
+  .hamburger    { display:flex; }
+  .mobile-nav   { display:block; }
+
+  /* ── Topbar harmonizado ── */
+  .topbar {
+    height:56px;
+    padding:0 14px;
+  }
+  .topbar-title { font-size:15px; }
+  .topbar-date  { display:none; }   /* esconde data — sem espaço */
+  .topbar-right { gap:8px; }
+
+  /* Botões de ação da topbar: some o texto, fica só ícone */
+  #btnRegistrarTopbar { padding:8px 12px; font-size:12px; gap:5px; }
+  #btnNovaTopbar      { display:none !important; }
+
+  /* Área de usuário na topbar: avatar + botão sair compacto */
+  .topbar-user          { gap:6px; }
+  .topbar-user-name     { display:none; }
+  .topbar-user-avatar   { width:30px; height:30px; font-size:11px; border-width:1px; }
+  .topbar-user-avatar img { width:30px; height:30px; }
+  .btn-topbar-logout    { padding:6px 10px; font-size:11px; gap:5px; }
   .btn-topbar-logout .logout-label { display:none; }
+
+  /* ── Páginas ── */
+  .page {
+    padding:14px 14px 96px;  /* bottom = mobile-nav + margem */
+  }
+
+  /* ── Section headers ── */
+  .section-title    { font-size:18px; }
+  .section-subtitle { font-size:12px; }
+  .section-header   { margin-bottom:14px; }
+
+  /* ── Guest banner: empilha verticalmente ── */
+  .guest-banner {
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+    padding:12px 14px;
+    font-size:12px;
+  }
+  .btn-banner-login { margin-left:0; width:100%; text-align:center; padding:10px; }
+
+  /* ── Alert banner ── */
+  .alert-banner { padding:12px 14px; font-size:13px; gap:8px; margin-bottom:14px; }
+
+  /* ── Métricas: 2 colunas equilibradas ── */
+  .metrics-grid {
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .metric-card    { padding:14px 12px; border-radius:var(--radius-md); }
+  .metric-label   { font-size:10px; margin-bottom:8px; }
+  .metric-value   { font-size:18px; letter-spacing:-0.5px; margin-bottom:4px; }
+  .metric-trend   { font-size:10px; }
+  .metric-icon    { font-size:18px; top:12px; right:12px; }
+
+  /* ── Cards ── */
+  .card-header  { padding:14px 16px; }
+  .card-body    { padding:14px 16px; }
+  .card-title   { font-size:13px; }
+
+  /* ── Content grid: coluna única ── */
+  .content-grid { grid-template-columns:1fr; gap:12px; margin-bottom:12px; }
+
+  /* ── Gráfico ── */
+  .chart-container { height:180px; }
+  .chart-legend    { gap:12px; margin-top:10px; padding-top:10px; font-size:11px; }
+
+  /* ── Transações: compactar sem perder info ── */
+  .transactions-list { gap:6px; max-height:none; padding-right:0; }
+  .transaction-item  { padding:10px 12px; gap:10px; border-radius:var(--radius-sm); }
+  .transaction-icon  { width:34px; height:34px; font-size:16px; border-radius:8px; }
+  .transaction-desc  { font-size:13px; }
+  .transaction-meta  { font-size:11px; gap:5px; }
+  .transaction-value { font-size:13px; }
+  .btn-delete        { width:26px; height:26px; font-size:11px; }
+
+  /* ── Filtros: scroll horizontal suave ── */
+  .filter-bar {
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    padding-bottom:6px;
+    gap:6px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .filter-bar::-webkit-scrollbar { display:none; }
+  .filter-chip { padding:6px 12px; font-size:11px; white-space:nowrap; }
+
+  /* ── Formulário nova transação ── */
+  .form-grid       { grid-template-columns:1fr; gap:12px; }
+  .form-input,
+  .form-select     { padding:12px 13px; font-size:15px; /* 16px mínimo previne zoom iOS */ }
+  .type-btn        { padding:12px 8px; font-size:13px; }
+  .btn-add         { padding:14px; font-size:15px; }
+
+  /* ── Metas ── */
+  .goal-form        { padding:14px; margin-bottom:14px; }
+  .goal-form-grid   { grid-template-columns:1fr; gap:10px; }
+  .btn-goal-add     { width:100%; padding:12px; }
+  .goal-card        { padding:14px; }
+  .goal-name        { font-size:13px; }
+  .goal-values      { font-size:12px; }
+  .goal-footer      { flex-wrap:wrap; gap:8px; }
+
+  /* ── Relatórios ── */
+  .report-grid  { grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:14px; }
+  .report-card  { padding:14px 12px; }
+  .report-card-icon  { font-size:22px; margin-bottom:6px; }
+  .report-card-label { font-size:10px; }
+  .report-card-value { font-size:16px; }
+
+  /* ── Score ring: menor em mobile ── */
+  .score-ring   { width:100px; height:100px; margin-bottom:12px; }
+  .score-number { font-size:22px; }
+
+  /* ── Categorias ── */
+  .category-label { width:80px; font-size:11px; }
+  .category-value { width:64px; font-size:11px; }
+
+  /* ── Empty state ── */
+  .empty-state  { padding:32px 16px; }
+  .empty-icon   { font-size:36px; }
+  .empty-text   { font-size:13px; }
+
+  /* ── Mobile nav ── */
+  .mobile-nav-item { padding:6px 10px; font-size:9px; }
+  .mobile-nav-icon { font-size:18px; }
+
+  /* ── Login screen ── */
+  .login-card     { padding:28px 20px; border-radius:var(--radius-lg); }
+  .login-logo     { width:52px; height:52px; font-size:24px; margin-bottom:14px; }
+  .login-title    { font-size:22px; }
+  .login-subtitle { font-size:13px; margin-bottom:24px; }
+  .btn-google     { padding:13px 16px; font-size:14px; }
+  .btn-guest      { padding:11px 16px; font-size:13px; }
+  .login-features { grid-template-columns:1fr 1fr; gap:8px; margin-top:20px; }
+  .login-feature  { padding:10px 8px; font-size:10px; }
+  .login-feature-icon { font-size:16px; }
+
+  /* ── Divider ── */
+  .divider { margin:14px 0; }
+
+  /* ── Toast ── */
+  .toast-container { top:12px; right:12px; left:12px; }
+  .toast           { max-width:100%; font-size:12px; padding:12px 14px; }
 }
 
-@media(max-width:400px){
-  .metrics-grid  { grid-template-columns:1fr; }
-  .login-features{ grid-template-columns:1fr; }
+/* ============================================
+   RESPONSIVE — MOBILE PEQUENO 480px
+============================================ */
+@media(max-width:480px){
+  .metrics-grid { gap:8px; }
+  .metric-card  { padding:12px 10px; }
+  .metric-value { font-size:16px; }
+  .metric-label { font-size:9px; }
+  .report-grid  { grid-template-columns:1fr 1fr; gap:8px; }
+  .topbar       { height:52px; }
+  .topbar-title { font-size:14px; }
+}
+
+/* ============================================
+   RESPONSIVE — MOBILE MÍNIMO 360px
+============================================ */
+@media(max-width:360px){
+  .metrics-grid  { grid-template-columns:1fr; gap:8px; }
+  .report-grid   { grid-template-columns:1fr; }
+  .page          { padding:10px 10px 96px; }
+  .metric-value  { font-size:20px; letter-spacing:-0.5px; }
+  .login-card    { padding:24px 16px; }
+  .login-features{ grid-template-columns:1fr 1fr; }
 }
 </style>
 </head>
@@ -2078,4 +2230,4 @@ service cloud.firestore {
 ════════════════════════════════════════════════════════════════
 -->
 </body>
-                   </html>
+           </html>
